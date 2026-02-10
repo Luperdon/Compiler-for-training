@@ -66,6 +66,8 @@
             this.insert = new System.Windows.Forms.PictureBox();
             this.textBoxEditor = new System.Windows.Forms.RichTextBox();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.file)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder)).BeginInit();
@@ -135,6 +137,7 @@
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
             this.выходToolStripMenuItem.Size = new System.Drawing.Size(229, 28);
             this.выходToolStripMenuItem.Text = "Выход";
+            this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
             // текстToolStripMenuItem
             // 
@@ -291,6 +294,7 @@
             this.file.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.file.TabIndex = 3;
             this.file.TabStop = false;
+            this.file.Click += new System.EventHandler(this.file_Click);
             // 
             // folder
             // 
@@ -301,6 +305,7 @@
             this.folder.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.folder.TabIndex = 4;
             this.folder.TabStop = false;
+            this.folder.Click += new System.EventHandler(this.folder_Click);
             // 
             // save
             // 
@@ -311,6 +316,7 @@
             this.save.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.save.TabIndex = 5;
             this.save.TabStop = false;
+            this.save.Click += new System.EventHandler(this.save_Click);
             // 
             // left
             // 
@@ -321,6 +327,7 @@
             this.left.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.left.TabIndex = 6;
             this.left.TabStop = false;
+            this.left.Click += new System.EventHandler(this.left_Click);
             // 
             // right
             // 
@@ -331,6 +338,7 @@
             this.right.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.right.TabIndex = 7;
             this.right.TabStop = false;
+            this.right.Click += new System.EventHandler(this.right_Click);
             // 
             // copy
             // 
@@ -341,6 +349,7 @@
             this.copy.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.copy.TabIndex = 8;
             this.copy.TabStop = false;
+            this.copy.Click += new System.EventHandler(this.copy_Click);
             // 
             // scissors
             // 
@@ -351,6 +360,7 @@
             this.scissors.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.scissors.TabIndex = 9;
             this.scissors.TabStop = false;
+            this.scissors.Click += new System.EventHandler(this.scissors_Click);
             // 
             // insert
             // 
@@ -361,6 +371,7 @@
             this.insert.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.insert.TabIndex = 10;
             this.insert.TabStop = false;
+            this.insert.Click += new System.EventHandler(this.insert_Click);
             // 
             // textBoxEditor
             // 
@@ -383,6 +394,10 @@
             this.richTextBox2.Size = new System.Drawing.Size(822, 182);
             this.richTextBox2.TabIndex = 12;
             this.richTextBox2.Text = "";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // CompilerForm
             // 
@@ -459,6 +474,8 @@
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.RichTextBox textBoxEditor;
         private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }
 
