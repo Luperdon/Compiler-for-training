@@ -37,6 +37,17 @@ namespace WindowsFormsApp2
             UpdateMenuState();
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!CheckUnsavedChanges())
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            base.OnFormClosing(e);
+        }
+
         private void InitializeEditMenu()
         {
             отменитьToolStripMenuItem.Click += (s, e) => Undo();
@@ -63,6 +74,30 @@ namespace WindowsFormsApp2
             textBoxEditor.TextChanged += TextBoxEditor_TextChanged;
             textBoxEditor.KeyUp += (s, e) => UpdateMenuState();
             textBoxEditor.MouseUp += (s, e) => UpdateMenuState();
+
+            splitContainer1.Panel1.Padding = new Padding(47);
+            //splitContainer1.Panel2.Padding = new Padding(45);
+
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Orientation = Orientation.Horizontal;
+            splitContainer1.SplitterWidth = 5;
+            splitContainer1.SplitterDistance = this.Width / 2; // 50% на 50%
+
+            textBoxEditor.Dock = DockStyle.Fill;
+            textBoxEditor.Multiline = true;
+            textBoxEditor.ScrollBars = RichTextBoxScrollBars.Both;
+
+            textBoxResults.Dock = DockStyle.Fill;
+            textBoxResults.Multiline = true;
+            textBoxResults.ScrollBars = RichTextBoxScrollBars.Both;
+            textBoxResults.ReadOnly = true;
+            textBoxResults.BackColor = Color.FromArgb(240, 240, 240);
+
+            splitContainer1.Panel1.Controls.Add(textBoxEditor);
+            splitContainer1.Panel2.Controls.Add(textBoxResults);
+
+            splitContainer1.Panel1MinSize = 200;
+            splitContainer1.Panel2MinSize = 200;
         }
 
         private void TextBoxEditor_TextChanged(object sender, EventArgs e)
@@ -265,7 +300,10 @@ namespace WindowsFormsApp2
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            if (CheckUnsavedChanges())
+            {
+                Application.Exit();
+            }
         }
 
         private void InitializeFileMenu()
@@ -448,12 +486,38 @@ namespace WindowsFormsApp2
         private void UpdateWindowTitle()
         {
             string fileName = string.IsNullOrEmpty(currentFilePath)
-                ? "Безымянный"
+                ? "Безымянный Файл"
                 : System.IO.Path.GetFileName(currentFilePath);
 
             string modifiedIndicator = isTextModified ? " *" : "";
 
             this.Text = $"{fileName}{modifiedIndicator} - Компиляторный Редактор";
+        }
+
+        private bool CheckUnsavedChanges()
+        {
+            if (isTextModified)
+            {
+                string fileName = string.IsNullOrEmpty(currentFilePath)
+                    ? "Безымянный Файл"
+                    : System.IO.Path.GetFileName(currentFilePath);
+
+                DialogResult result = MessageBox.Show(
+                    $"Сохранить изменения в файле \"{fileName}\"?",
+                    "Несохраненные изменения",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    return SaveFile();
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private void folder_Click(object sender, EventArgs e)

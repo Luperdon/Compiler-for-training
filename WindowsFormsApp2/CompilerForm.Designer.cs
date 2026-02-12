@@ -65,9 +65,10 @@
             this.scissors = new System.Windows.Forms.PictureBox();
             this.insert = new System.Windows.Forms.PictureBox();
             this.textBoxEditor = new System.Windows.Forms.RichTextBox();
-            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.textBoxResults = new System.Windows.Forms.RichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.file)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder)).BeginInit();
@@ -77,6 +78,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.copy)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scissors)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.insert)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -214,43 +217,43 @@
             // отменитьToolStripMenuItem
             // 
             this.отменитьToolStripMenuItem.Name = "отменитьToolStripMenuItem";
-            this.отменитьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.отменитьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.отменитьToolStripMenuItem.Text = "Отменить";
             // 
             // повторитьToolStripMenuItem
             // 
             this.повторитьToolStripMenuItem.Name = "повторитьToolStripMenuItem";
-            this.повторитьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.повторитьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.повторитьToolStripMenuItem.Text = "Повторить";
             // 
             // вырезатьToolStripMenuItem
             // 
             this.вырезатьToolStripMenuItem.Name = "вырезатьToolStripMenuItem";
-            this.вырезатьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.вырезатьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.вырезатьToolStripMenuItem.Text = "Вырезать";
             // 
             // копироватьToolStripMenuItem
             // 
             this.копироватьToolStripMenuItem.Name = "копироватьToolStripMenuItem";
-            this.копироватьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.копироватьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.копироватьToolStripMenuItem.Text = "Копировать";
             // 
             // вставитьToolStripMenuItem
             // 
             this.вставитьToolStripMenuItem.Name = "вставитьToolStripMenuItem";
-            this.вставитьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.вставитьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.вставитьToolStripMenuItem.Text = "Вставить";
             // 
             // удалитьToolStripMenuItem
             // 
             this.удалитьToolStripMenuItem.Name = "удалитьToolStripMenuItem";
-            this.удалитьToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.удалитьToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.удалитьToolStripMenuItem.Text = "Удалить";
             // 
             // выделитьВсеToolStripMenuItem
             // 
             this.выделитьВсеToolStripMenuItem.Name = "выделитьВсеToolStripMenuItem";
-            this.выделитьВсеToolStripMenuItem.Size = new System.Drawing.Size(224, 28);
+            this.выделитьВсеToolStripMenuItem.Size = new System.Drawing.Size(223, 28);
             this.выделитьВсеToolStripMenuItem.Text = "Выделить все";
             // 
             // пускToolStripMenuItem
@@ -375,29 +378,38 @@
             // 
             // textBoxEditor
             // 
-            this.textBoxEditor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.textBoxEditor.Location = new System.Drawing.Point(12, 116);
+            this.textBoxEditor.Location = new System.Drawing.Point(12, 94);
             this.textBoxEditor.Name = "textBoxEditor";
-            this.textBoxEditor.Size = new System.Drawing.Size(822, 182);
+            this.textBoxEditor.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.textBoxEditor.Size = new System.Drawing.Size(822, 204);
             this.textBoxEditor.TabIndex = 11;
             this.textBoxEditor.Text = "";
             // 
-            // richTextBox2
+            // textBoxResults
             // 
-            this.richTextBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox2.BackColor = System.Drawing.Color.Silver;
-            this.richTextBox2.Location = new System.Drawing.Point(12, 305);
-            this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.Size = new System.Drawing.Size(822, 182);
-            this.richTextBox2.TabIndex = 12;
-            this.richTextBox2.Text = "";
+            this.textBoxResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.textBoxResults.BackColor = System.Drawing.Color.Silver;
+            this.textBoxResults.Location = new System.Drawing.Point(12, 313);
+            this.textBoxResults.Name = "textBoxResults";
+            this.textBoxResults.ReadOnly = true;
+            this.textBoxResults.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.textBoxResults.Size = new System.Drawing.Size(822, 185);
+            this.textBoxResults.TabIndex = 12;
+            this.textBoxResults.Text = "";
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Location = new System.Drawing.Point(14, 94);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.splitContainer1.Size = new System.Drawing.Size(820, 404);
+            this.splitContainer1.SplitterDistance = 201;
+            this.splitContainer1.TabIndex = 13;
             // 
             // CompilerForm
             // 
@@ -405,8 +417,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.ClientSize = new System.Drawing.Size(846, 498);
-            this.Controls.Add(this.richTextBox2);
-            this.Controls.Add(this.textBoxEditor);
             this.Controls.Add(this.insert);
             this.Controls.Add(this.scissors);
             this.Controls.Add(this.copy);
@@ -415,11 +425,15 @@
             this.Controls.Add(this.save);
             this.Controls.Add(this.folder);
             this.Controls.Add(this.file);
+            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.textBoxResults);
+            this.Controls.Add(this.textBoxEditor);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "CompilerForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Compiler";
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.file)).EndInit();
@@ -430,6 +444,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.copy)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scissors)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.insert)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -473,9 +489,10 @@
         private System.Windows.Forms.ToolStripMenuItem вызовСправкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.RichTextBox textBoxEditor;
-        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.RichTextBox textBoxResults;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.SplitContainer splitContainer1;
     }
 }
 
