@@ -76,12 +76,11 @@ namespace WindowsFormsApp2
             textBoxEditor.MouseUp += (s, e) => UpdateMenuState();
 
             splitContainer1.Panel1.Padding = new Padding(47);
-            //splitContainer1.Panel2.Padding = new Padding(45);
 
             splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Orientation = Orientation.Horizontal;
             splitContainer1.SplitterWidth = 5;
-            splitContainer1.SplitterDistance = this.Width / 2; // 50% на 50%
+            splitContainer1.SplitterDistance = this.Width / 2;
 
             textBoxEditor.Dock = DockStyle.Fill;
             textBoxEditor.Multiline = true;
@@ -228,38 +227,7 @@ namespace WindowsFormsApp2
             вставитьToolStripMenuItem.Enabled = Clipboard.ContainsText();
 
             выделитьВсеToolStripMenuItem.Enabled = !string.IsNullOrEmpty(textBoxEditor.Text);
-
-            //UpdateToolStripButtons();
         }
-
-        //private void UpdateToolStripButtons()
-        //{
-        //    // Обновляем состояние кнопок на ToolStrip (если они есть)
-        //    if (toolStripButtonUndo != null)
-        //    {
-        //        toolStripButtonUndo.Enabled = отменитьToolStripMenuItem.Enabled;
-        //    }
-
-        //    if (toolStripButtonRedo != null)
-        //    {
-        //        toolStripButtonRedo.Enabled = повторитьToolStripMenuItem.Enabled;
-        //    }
-
-        //    if (toolStripButtonCut != null)
-        //    {
-        //        toolStripButtonCut.Enabled = вырезатьToolStripMenuItem.Enabled;
-        //    }
-
-        //    if (toolStripButtonCopy != null)
-        //    {
-        //        toolStripButtonCopy.Enabled = копироватьToolStripMenuItem.Enabled;
-        //    }
-
-        //    if (toolStripButtonPaste != null)
-        //    {
-        //        toolStripButtonPaste.Enabled = вставитьToolStripMenuItem.Enabled;
-        //    }
-        //}
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
