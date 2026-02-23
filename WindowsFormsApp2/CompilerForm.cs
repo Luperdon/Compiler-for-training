@@ -231,14 +231,16 @@ namespace WindowsFormsApp2
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutProgramForm aboutProgram = new AboutProgramForm();
-            aboutProgram.Show();
+            string htmlFilePath = Application.StartupPath + "\\Info\\AboutProgram.html";
+
+            System.Diagnostics.Process.Start(htmlFilePath);
         }
 
         private void вызовСправкиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UserHelpForm userHelpForm = new UserHelpForm();
-            userHelpForm.Show();
+            string htmlFilePath = Application.StartupPath + "\\Info\\UserHelp.html";
+
+            System.Diagnostics.Process.Start(htmlFilePath);
         }
 
         private void left_Click(object sender, EventArgs e)
