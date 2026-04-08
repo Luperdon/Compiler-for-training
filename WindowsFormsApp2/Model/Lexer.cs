@@ -189,29 +189,24 @@ namespace WindowsFormsApp2.Model
                     code = 18;
                     break;
                 case '{':
-                    // Проверяем, не является ли это началом правильного форматного спецификатора {:f}
                     if (position + 2 < text.Length &&
                         text[position] == ':' &&
                         text[position + 1] == 'f' &&
                         text[position + 2] == '}')
                     {
-                        // Это {:f} - создаем одну лексему ошибки (потому что вне строки)
                         string errorFragment = "{:f}";
                         lexemsList.Add(new Lexem(19, errorFragment, start, position + 3, line));
                         position += 3;
                         return false;
                     }
-                    // Одиночная открывающая скобка - ошибка
                     code = 19;
                     lexemsList.Add(new Lexem(code, currentChar.ToString(), start, position, line));
                     return false;
                 case ':':
-                    // Проверяем, не является ли это началом неправильного спецификатора :f или :f}
                     if (position < text.Length && text[position] == 'f')
                     {
                         if (position + 1 < text.Length && text[position + 1] == '}')
                         {
-                            // Последовательность :f}
                             string errorFragment = ":f}";
                             lexemsList.Add(new Lexem(19, errorFragment, start, position + 2, line));
                             position += 3;
@@ -219,18 +214,15 @@ namespace WindowsFormsApp2.Model
                         }
                         else
                         {
-                            // Только :f
                             string errorFragment = ":f";
                             lexemsList.Add(new Lexem(19, errorFragment, start, position + 1, line));
                             position += 2;
                             return false;
                         }
                     }
-                    // Обычное двоеточие вне строки - ошибка
                     lexemsList.Add(new Lexem(19, currentChar.ToString(), start, position, line));
                     return false;
                 case '}':
-                    // Одиночная закрывающая скобка вне строки - ошибка
                     lexemsList.Add(new Lexem(19, currentChar.ToString(), start, position, line));
                     return false;
                 default:
@@ -244,13 +236,11 @@ namespace WindowsFormsApp2.Model
 
         private void ProcessString()
         {
-            int startQuotePos = position - 1; // позиция открывающей кавычки
+            int startQuotePos = position - 1; 
             int line = currentLine;
 
-            // Добавляем открывающую кавычку
             lexemsList.Add(new Lexem(5, "\"", startQuotePos, position, line));
 
-            // Ищем закрывающую кавычку
             int closingQuotePos = -1;
             int tempPos = position;
             while (tempPos < text.Length)
@@ -263,18 +253,16 @@ namespace WindowsFormsApp2.Model
                 }
                 if (ch == '\n')
                 {
-                    break; // перевод строки до кавычки — ошибка
+                    break;
                 }
                 tempPos++;
             }
 
             if (closingQuotePos != -1)
             {
-                // Есть закрывающая кавычка — обрабатываем содержимое строки
                 while (position < closingQuotePos)
                 {
                     char currentChar = text[position];
-                    // Распознаём {:f} как специальную конструкцию
                     if (currentChar == '{' && position + 3 < closingQuotePos &&
                         text[position + 1] == ':' &&
                         text[position + 2] == 'f' &&
@@ -291,25 +279,20 @@ namespace WindowsFormsApp2.Model
                     }
                     else
                     {
-                        // Обычный символ внутри строки
                         lexemsList.Add(new Lexem(3, currentChar.ToString(), position, position + 1, line));
                         position++;
                     }
                 }
-                // Пропускаем закрывающую кавычку
-                position++; // перешагиваем "
+                position++; 
                 lexemsList.Add(new Lexem(5, "\"", closingQuotePos, closingQuotePos + 1, line));
             }
             else
             {
-                // Нет закрывающей кавычки — выдаём ОДНУ ошибку и пропускаем все символы до ';' или конца строки
                 while (position < text.Length && text[position] != ';' && text[position] != '\n')
                 {
                     position++;
                 }
-                // Добавляем одну лексему ошибки
                 lexemsList.Add(new Lexem(19, "Незакрытая строка (отсутствует закрывающая кавычка)", startQuotePos, position, line));
-                // Если остановились на ';' — не поглощаем его, он будет обработан позже как отдельная лексема
             }
         }
     }

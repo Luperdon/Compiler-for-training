@@ -33,7 +33,6 @@ namespace WindowsFormsApp2.Model
         private int lastErrorPositionInLine;
         private bool errorFoundInCurrentStatement;
 
-        // Для проверки форматного спецификатора
         private int formatSpecifierStep;
         private int formatSpecifierStartPosition;
         private bool formatSpecifierErrorReported;
@@ -92,7 +91,6 @@ namespace WindowsFormsApp2.Model
                     stateLog.Add($"--- Новая строка {currentLine} ---");
                 }
 
-                // Проверка ожидаемой лексемы
                 if (IsExpectedLexem(currentState, currentLexem))
                 {
                     ProcessLexem(currentLexem);
@@ -100,7 +98,6 @@ namespace WindowsFormsApp2.Model
                 }
                 else
                 {
-                    // Записываем ошибку
                     string description = GetErrorDescription(currentState, currentLexem);
                     AddError(currentLexem, description, currentLexem.lexemLine, currentLexem.lexemStartPosition);
                     stateLog.Add($"ОШИБКА: {description} (Лексема: '{currentLexem.lexemContaintment}')");
@@ -280,9 +277,8 @@ namespace WindowsFormsApp2.Model
                         AddError(lexem, description, lexem.lexemLine, formatSpecifierStartPosition);
                         stateLog.Add($"ОШИБКА: {description}");
 
-                        // Вместо перехода в CloseQuote – сбрасываем состояние и включаем пропуск до ';'
                         errorFoundInCurrentStatement = true;
-                        skipToNextStatement = true;   // добавьте поле в класс
+                        skipToNextStatement = true; 
                         currentState = ParserState.Start;
                         ResetFormatSpecifier();
                     }
@@ -353,10 +349,8 @@ namespace WindowsFormsApp2.Model
                 return $"Недопустимый символ '{lexem.lexemContaintment}'";
             }
 
-            // Специальная диагностика для отсутствия закрывающей кавычки
             if (state == ParserState.CloseQuote && lexem.lexemCode != 5)
             {
-                // Проверяем, не является ли это опечаткой в format
                 if (lexem.lexemContaintment == "f" || lexem.lexemContaintment == "fo" ||
                     lexem.lexemContaintment == "for" || lexem.lexemContaintment == "form" ||
                     lexem.lexemContaintment == "forma" || lexem.lexemContaintment == "format")
