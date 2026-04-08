@@ -65,13 +65,13 @@
             this.scissors = new System.Windows.Forms.PictureBox();
             this.insert = new System.Windows.Forms.PictureBox();
             this.textBoxEditor = new System.Windows.Forms.RichTextBox();
-            this.textBoxResults = new System.Windows.Forms.RichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.runButton = new System.Windows.Forms.PictureBox();
             this.infoButton = new System.Windows.Forms.PictureBox();
             this.questionButton = new System.Windows.Forms.PictureBox();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.file)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.folder)).BeginInit();
@@ -82,10 +82,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.scissors)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.insert)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.runButton)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.infoButton)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.questionButton)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -393,18 +395,6 @@
             this.textBoxEditor.TabIndex = 11;
             this.textBoxEditor.Text = "";
             // 
-            // textBoxResults
-            // 
-            this.textBoxResults.BackColor = System.Drawing.Color.Silver;
-            this.textBoxResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBoxResults.Location = new System.Drawing.Point(12, 313);
-            this.textBoxResults.Name = "textBoxResults";
-            this.textBoxResults.ReadOnly = true;
-            this.textBoxResults.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.textBoxResults.Size = new System.Drawing.Size(822, 185);
-            this.textBoxResults.TabIndex = 12;
-            this.textBoxResults.Text = "";
-            // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
@@ -417,6 +407,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.dgvResults);
             this.splitContainer1.Panel2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.splitContainer1.Size = new System.Drawing.Size(820, 404);
             this.splitContainer1.SplitterDistance = 200;
@@ -455,6 +446,16 @@
             this.questionButton.TabStop = false;
             this.questionButton.Click += new System.EventHandler(this.questionButton_Click);
             // 
+            // dgvResults
+            // 
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Location = new System.Drawing.Point(0, 3);
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.RowHeadersWidth = 51;
+            this.dgvResults.RowTemplate.Height = 24;
+            this.dgvResults.Size = new System.Drawing.Size(820, 194);
+            this.dgvResults.TabIndex = 1;
+            // 
             // CompilerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -473,7 +474,6 @@
             this.Controls.Add(this.folder);
             this.Controls.Add(this.file);
             this.Controls.Add(this.splitContainer1);
-            this.Controls.Add(this.textBoxResults);
             this.Controls.Add(this.textBoxEditor);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -491,11 +491,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.copy)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scissors)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.insert)).EndInit();
+            this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.runButton)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.infoButton)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.questionButton)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -539,13 +541,13 @@
         private System.Windows.Forms.ToolStripMenuItem вызовСправкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.RichTextBox textBoxEditor;
-        private System.Windows.Forms.RichTextBox textBoxResults;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.PictureBox runButton;
         private System.Windows.Forms.PictureBox infoButton;
         private System.Windows.Forms.PictureBox questionButton;
+        private System.Windows.Forms.DataGridView dgvResults;
     }
 }
 

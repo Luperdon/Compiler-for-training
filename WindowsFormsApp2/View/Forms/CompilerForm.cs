@@ -31,6 +31,7 @@ namespace WindowsFormsApp2
         private Parser _parser;
         private List<Lexem> _lastLexems;
 
+        private List<Parser.SyntaxError> _lastSyntaxErrors;
         public CompilerForm()
         {
             InitializeComponent();
@@ -40,7 +41,7 @@ namespace WindowsFormsApp2
 
             InitializeEditMenu();
             InitializeFileMenu();
-            InitializeResultsTextBox();
+            InitializeResultsDataGridView();
             InitializeRunButton();
 
             UpdateWindowTitle();
@@ -53,7 +54,7 @@ namespace WindowsFormsApp2
         {
             _lastAnalysisResult = result;
 
-            textBoxResults.Clear();
+            //textBoxResults.Clear();
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"РЕЗУЛЬТАТЫ ЛЕКСИЧЕСКОГО АНАЛИЗА - {DateTime.Now:HH:mm:ss}");
@@ -98,7 +99,7 @@ namespace WindowsFormsApp2
                 sb.AppendLine("📋 Используйте контекстное меню для копирования результатов.");
             }
 
-            textBoxResults.Text = sb.ToString();
+            //textBoxResults.Text = sb.ToString();
 
             // Подсветка ошибок в редакторе
             HighlightErrors(result);
@@ -130,59 +131,127 @@ namespace WindowsFormsApp2
             textBoxEditor.SelectionBackColor = Color.White; 
         }
 
-        private void InitializeResultsTextBox()
+        private void InitializeResultsDataGridView()
         {
-            textBoxResults.ReadOnly = true;
-            textBoxResults.BackColor = Color.FromArgb(240, 240, 240);
-            textBoxResults.Font = new Font("Consolas", 12);
-            textBoxResults.WordWrap = false;
+            // Ищем DataGridView на форме
+            dgvResults = this.Controls.OfType<DataGridView>().FirstOrDefault();
 
-            textBoxResults.DoubleClick += TextBoxResults_DoubleClick;
-
-            ContextMenuStrip resultsMenu = new ContextMenuStrip();
-            ToolStripMenuItem copyItem = new ToolStripMenuItem("Копировать");
-            copyItem.Click += (s, e) => CopyResultsToClipboard();
-            resultsMenu.Items.Add(copyItem);
-
-            ToolStripMenuItem clearItem = new ToolStripMenuItem("Очистить");
-            clearItem.Click += (s, e) => textBoxResults.Clear();
-            resultsMenu.Items.Add(clearItem);
-
-            textBoxResults.ContextMenuStrip = resultsMenu;
-        }
-
-        private void TextBoxResults_DoubleClick(object sender, EventArgs e)
-        {
-            if (_lastAnalysisResult == null) return;
-
-            int cursorPos = textBoxResults.SelectionStart;
-            string text = textBoxResults.Text;
-
-            int lineStart = text.LastIndexOf('\n', cursorPos - 1) + 1;
-            int lineEnd = text.IndexOf('\n', cursorPos);
-            if (lineEnd == -1) lineEnd = text.Length;
-
-            string line = text.Substring(lineStart, lineEnd - lineStart);
-
-            if (line.Contains("ОШИБКА"))
+            // Если не нашли через Controls, ищем во всех контролах
+            if (dgvResults == null)
             {
-                
-                int lineNumStart = line.LastIndexOf("стр.") + 4;
-                int lineNumEnd = line.IndexOf(' ', lineNumStart);
-                if (int.TryParse(line.Substring(lineNumStart, lineNumEnd - lineNumStart), out int errorLine))
-                {
-                    int posStart = line.IndexOf('(') + 1;
-                    int posEnd = line.IndexOf('-');
-                    int posEnd2 = line.IndexOf(')');
+                dgvResults = FindControl<DataGridView>(this, "dgvResults");
+            }
 
-                    if (int.TryParse(line.Substring(posStart, posEnd - posStart), out int startPos) &&
-                        int.TryParse(line.Substring(posEnd + 1, posEnd2 - posEnd - 1), out int endPos))
-                    {
-                        NavigateToErrorPosition(startPos, endPos);
-                    }
+            if (dgvResults == null)
+            {
+                // Создаем DataGridView программно
+                dgvResults = new DataGridView();
+                dgvResults.Name = "dgvResults";
+
+                // Добавляем в Panel2 splitContainer1
+                if (splitContainer1 != null)
+                {
+                    splitContainer1.Panel2.Controls.Add(dgvResults);
+                }
+                else
+                {
+                    this.Controls.Add(dgvResults);
                 }
             }
+
+            // Настройка внешнего вида
+            dgvResults.AllowUserToAddRows = false;
+            dgvResults.AllowUserToDeleteRows = false;
+            dgvResults.AllowUserToOrderColumns = false;
+            dgvResults.AllowUserToResizeRows = false;
+            dgvResults.ReadOnly = true;
+            dgvResults.RowHeadersVisible = false;
+            dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvResults.BackgroundColor = Color.FromArgb(240, 240, 240);
+            dgvResults.BorderStyle = BorderStyle.None;
+            dgvResults.Font = new Font("Consolas", 10);
+            dgvResults.Dock = DockStyle.Fill;
+            dgvResults.Visible = true;
+
+            // Настройка цветов
+            dgvResults.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            dgvResults.DefaultCellStyle.BackColor = Color.White;
+            dgvResults.DefaultCellStyle.ForeColor = Color.Black;
+            dgvResults.DefaultCellStyle.SelectionBackColor = Color.LightSteelBlue;
+            dgvResults.DefaultCellStyle.SelectionForeColor = Color.Black;
+            dgvResults.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(60, 60, 60);
+            dgvResults.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvResults.ColumnHeadersDefaultCellStyle.Font = new Font("Consolas", 10, FontStyle.Bold);
+            dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+
+            // Создаем пустые колонки по умолчанию (чтобы избежать ошибки)
+            dgvResults.Columns.Clear();
+            dgvResults.Columns.Add("Message", "СООБЩЕНИЕ");
+            dgvResults.Rows.Add("Готов к анализу.");
+
+            // Обработчик двойного щелчка
+            dgvResults.CellDoubleClick += DgvResults_CellDoubleClick;
+
+            // Контекстное меню
+            ContextMenuStrip resultsMenu = new ContextMenuStrip();
+            ToolStripMenuItem copyItem = new ToolStripMenuItem("Копировать");
+            copyItem.Click += (s, e) => CopyAllResultsToClipboard();
+            resultsMenu.Items.Add(copyItem);
+
+            ToolStripMenuItem copyAllItem = new ToolStripMenuItem("Копировать всё");
+            copyAllItem.Click += (s, e) => CopyAllResultsToClipboard();
+            resultsMenu.Items.Add(copyAllItem);
+
+            ToolStripMenuItem clearItem = new ToolStripMenuItem("Очистить");
+            clearItem.Click += (s, e) => ClearResults();
+            resultsMenu.Items.Add(clearItem);
+
+            dgvResults.ContextMenuStrip = resultsMenu;
+
+            // Принудительное обновление
+            dgvResults.Refresh();
         }
+
+        // Вспомогательный метод для поиска контрола
+        private T FindControl<T>(Control parent, string name) where T : Control
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is T && control.Name == name)
+                    return (T)control;
+
+                var result = FindControl<T>(control, name);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
+
+        //private void TextBoxResults_DoubleClick(object sender, EventArgs e)
+        //{
+        //    if (_lastSyntaxErrors == null || !_lastSyntaxErrors.Any()) return;
+
+        //    int cursorPos = textBoxResults.SelectionStart;
+        //    string text = textBoxResults.Text;
+
+        //    // Находим строку, на которой произошел двойной щелчок
+        //    int lineStart = text.LastIndexOf('\n', cursorPos - 1) + 1;
+        //    int lineEnd = text.IndexOf('\n', cursorPos);
+        //    if (lineEnd == -1) lineEnd = text.Length;
+
+        //    string line = text.Substring(lineStart, lineEnd - lineStart);
+
+        //    // Пытаемся найти ошибку в этой строке
+        //    // Упрощенный подход - берем первую ошибку (для демо)
+        //    // В реальном проекте нужно парсить номер строки из таблицы
+        //    var firstError = _lastSyntaxErrors.FirstOrDefault();
+        //    if (firstError != null)
+        //    {
+        //        NavigateToSyntaxError(firstError);
+        //    }
+        //}
+
 
         private void NavigateToErrorPosition(int startPos, int endPos)
         {
@@ -206,22 +275,46 @@ namespace WindowsFormsApp2
             }
         }
 
-        private void CopyResultsToClipboard()
+        private void NavigateToSyntaxError(Parser.SyntaxError error)
         {
-            if (!string.IsNullOrEmpty(textBoxResults.Text))
+            int position = GetPositionFromLineAndColumn(error.Line, error.Position);
+            if (position >= 0)
             {
-                Clipboard.SetText(textBoxResults.Text);
-                MessageBox.Show("Результаты скопированы в буфер обмена",
-                    "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                textBoxEditor.Focus();
+                textBoxEditor.Select(position, 1);
+                textBoxEditor.ScrollToCaret();
+
+                textBoxEditor.SelectionBackColor = Color.Yellow;
+
+                Timer timer = new Timer();
+                timer.Interval = 2000;
+                timer.Tick += (s, e) =>
+                {
+                    textBoxEditor.SelectionBackColor = Color.White;
+                    timer.Stop();
+                    timer.Dispose();
+                };
+                timer.Start();
             }
         }
+
+        //private void CopyResultsToClipboard()
+        //{
+        //    if (!string.IsNullOrEmpty(textBoxResults.Text))
+        //    {
+        //        Clipboard.SetText(textBoxResults.Text);
+        //        MessageBox.Show("Результаты скопированы в буфер обмена",
+        //            "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //    }
+        //}
 
         private void RunAnalysis()
         {
             try
             {
-                textBoxResults.Clear();
+                ClearResults();
                 _lastLexems = null;
+                _lastSyntaxErrors = null;
 
                 textBoxEditor.SelectAll();
                 textBoxEditor.SelectionBackColor = Color.White;
@@ -231,29 +324,55 @@ namespace WindowsFormsApp2
 
                 if (string.IsNullOrWhiteSpace(code))
                 {
-                    textBoxResults.Text = "Введите текст для анализа.";
+                    if (dgvResults != null)
+                    {
+                        dgvResults.Rows.Clear();
+                        dgvResults.Columns.Clear();
+                        dgvResults.Columns.Add("Message", "СООБЩЕНИЕ");
+                        dgvResults.Rows.Add("Введите текст для анализа.");
+                    }
                     return;
                 }
 
+                // Лексический анализ
                 _lexer = new Lexer(code);
                 _lastLexems = _lexer.Scan();
 
-                bool syntaxValid = false;
-                if (_lastLexems.Any(l => l.lexemType == Lexem.LexemType.Error))
+                // Синтаксический анализ
+                _parser = new Parser(_lastLexems);
+                bool syntaxValid = _parser.Parse();
+                var errors = _parser.GetErrors();
+
+                if (errors.Any())
                 {
-                    DisplayLexemsOnly(_lastLexems);
+                    DisplaySyntaxErrors(errors);
+                    HighlightErrorsFromSyntax(errors);
+
+                    MessageBox.Show($"Обнаружены синтаксические ошибки.\n" +
+                                  $"Всего ошибок: {errors.Count}\n\n" +
+                                  $"Для перехода к ошибке щелкните на строке в таблице.",
+                        "Результат анализа",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
                 }
                 else
                 {
-                    _parser = new Parser(_lastLexems);
-                    syntaxValid = _parser.Parse();
+                    // Если нет ошибок, показываем сообщение об успехе в DataGridView
+                    if (dgvResults != null)
+                    {
+                        dgvResults.Rows.Clear();
+                        dgvResults.Columns.Clear();
+                        dgvResults.Columns.Add("Message", "СООБЩЕНИЕ");
+                        dgvResults.Rows.Add("Синтаксический анализ выполнен успешно.");
+                        dgvResults.Rows.Add("Ошибок не обнаружено.");
+                    }
 
-                    DisplayFullResults(_lastLexems, syntaxValid, _parser);
+                    MessageBox.Show("Синтаксический анализ выполнен успешно!\n" +
+                                  "Ошибок не обнаружено.",
+                        "Результат анализа",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                 }
-
-                HighlightErrorsFromLexems(_lastLexems);
-
-                ShowAnalysisResultMessage(_lastLexems, syntaxValid);
             }
             catch (Exception ex)
             {
@@ -262,102 +381,271 @@ namespace WindowsFormsApp2
             }
         }
 
-        private void DisplayLexemsOnly(List<Lexem> lexems)
+        private void HighlightErrorsFromSyntax(List<Parser.SyntaxError> errors)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"РЕЗУЛЬТАТЫ ЛЕКСИЧЕСКОГО АНАЛИЗА - {DateTime.Now:HH:mm:ss}");
-            sb.AppendLine("==========================================================");
-            sb.AppendLine();
-            sb.AppendLine($"{"КОД",-6} {"ТИП ЛЕКСЕМЫ",-20} {"ЛЕКСЕМА",-25} {"ПОЗИЦИЯ"}");
-            sb.AppendLine(new string('=', 80));
+            if (errors == null || !errors.Any()) return;
 
-            int errorCount = 0;
-            int lineNumber = 1;
+            int currentSelectionStart = textBoxEditor.SelectionStart;
+            int currentSelectionLength = textBoxEditor.SelectionLength;
 
-            foreach (var lexem in lexems)
+            textBoxEditor.SelectAll();
+            textBoxEditor.SelectionBackColor = Color.White;
+
+            foreach (var error in errors)
             {
-                if (lexem.lexemType == Lexem.LexemType.Error)
+                int position = GetPositionFromLineAndColumn(error.Line, error.Position);
+                if (position >= 0 && position < textBoxEditor.TextLength)
                 {
-                    errorCount++;
-                    sb.AppendLine($"  {lexem.GetFormattedString()}");
-                }
-                else
-                {
-                    sb.AppendLine($"  {lexem.GetFormattedString()}");
+                    // Подсвечиваем ошибочный фрагмент (или позицию)
+                    int length = error.Fragment?.Length ?? 1;
+                    textBoxEditor.Select(position, Math.Min(length, textBoxEditor.TextLength - position));
+                    textBoxEditor.SelectionBackColor = Color.LightCoral;
                 }
             }
 
-            sb.AppendLine(new string('=', 80));
-            sb.AppendLine($"ИТОГО:");
-            sb.AppendLine($"  ✓ Лексем: {lexems.Count(l => l.lexemType != Lexem.LexemType.Error)}");
-            sb.AppendLine($"  ✗ Ошибок лексического анализа: {errorCount}");
+            if (currentSelectionStart <= textBoxEditor.TextLength)
+            {
+                textBoxEditor.Select(currentSelectionStart,
+                    Math.Min(currentSelectionLength, textBoxEditor.TextLength - currentSelectionStart));
+            }
+        }
 
-            textBoxResults.Text = sb.ToString();
+        private void DisplaySyntaxErrors(List<Parser.SyntaxError> errors)
+        {
+            if (dgvResults == null)
+            {
+                InitializeResultsDataGridView();
+                if (dgvResults == null) return;
+            }
+
+            // Очищаем и создаем колонки
+            dgvResults.Rows.Clear();
+            dgvResults.Columns.Clear();
+
+            // Настройка колонок для таблицы ошибок
+            dgvResults.Columns.Add("Fragment", "НЕВЕРНЫЙ ФРАГМЕНТ");
+            dgvResults.Columns.Add("Line", "СТРОКА");
+            dgvResults.Columns.Add("Position", "ПОЗИЦИЯ");
+            dgvResults.Columns.Add("Description", "ОПИСАНИЕ");
+
+            // Настройка ширины колонок
+            dgvResults.Columns["Fragment"].Width = 200;
+            dgvResults.Columns["Line"].Width = 60;
+            dgvResults.Columns["Position"].Width = 70;
+            dgvResults.Columns["Description"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+            // Заполнение данными
+            foreach (var error in errors)
+            {
+                string fragment = (error.Fragment?.Length > 30) ?
+                    error.Fragment.Substring(0, 27) + "..." :
+                    (error.Fragment ?? "null");
+
+                int rowIndex = dgvResults.Rows.Add(fragment, error.Line, error.Position, error.Description);
+
+                // Подсветка строк с ошибками
+                if (error.Description.Contains("Недопустимый") || error.Description.Contains("Ошибка"))
+                {
+                    dgvResults.Rows[rowIndex].DefaultCellStyle.BackColor = Color.LightCoral;
+                }
+            }
+
+            // Добавление строки с итогами
+            int summaryRowIndex = dgvResults.Rows.Add("", "", "", "");
+            dgvResults.Rows[summaryRowIndex].DefaultCellStyle.BackColor = Color.LightGray;
+            dgvResults.Rows[summaryRowIndex].Cells[3].Value = $"ВСЕГО НАЙДЕНО ОШИБОК: {errors.Count}";
+
+            // Сохраняем ошибки для навигации
+            _lastSyntaxErrors = errors;
+
+            dgvResults.Refresh();
+        }
+
+        private void DisplayLexemsOnly(List<Lexem> lexems)
+        {
+            if (dgvResults == null)
+            {
+                InitializeResultsDataGridView();
+                if (dgvResults == null) return;
+            }
+
+            dgvResults.Rows.Clear();
+            dgvResults.Columns.Clear();
+
+            // Настройка колонок для лексем
+            dgvResults.Columns.Add("Code", "КОД");
+            dgvResults.Columns.Add("Type", "ТИП ЛЕКСЕМЫ");
+            dgvResults.Columns.Add("Lexem", "ЛЕКСЕМА");
+            dgvResults.Columns.Add("Position", "ПОЗИЦИЯ");
+
+            // Настройка ширины колонок
+            dgvResults.Columns["Code"].Width = 60;
+            dgvResults.Columns["Type"].Width = 180;
+            dgvResults.Columns["Lexem"].Width = 200;
+            dgvResults.Columns["Position"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+            int errorCount = 0;
+
+            foreach (var lexem in lexems)
+            {
+                string location = $"({lexem.lexemStartPosition}-{lexem.lexemEndPosition})";
+
+                if (lexem.lexemType == Lexem.LexemType.Error)
+                {
+                    errorCount++;
+                    int rowIndex = dgvResults.Rows.Add(lexem.lexemCode, "ОШИБКА", lexem.lexemContaintment, location);
+                    dgvResults.Rows[rowIndex].DefaultCellStyle.BackColor = Color.LightCoral;
+                }
+                else
+                {
+                    dgvResults.Rows.Add(lexem.lexemCode, lexem.lexemName, lexem.lexemContaintment, location);
+                }
+            }
+
+            // Добавление строки с итогами
+            int summaryRowIndex = dgvResults.Rows.Add("", "", "", "");
+            dgvResults.Rows[summaryRowIndex].DefaultCellStyle.BackColor = Color.LightGray;
+            dgvResults.Rows[summaryRowIndex].Cells[3].Value = $"✓ Лексем: {lexems.Count(l => l.lexemType != Lexem.LexemType.Error)} | ✗ Ошибок: {errorCount}";
+
+            dgvResults.Refresh();
         }
 
         private void DisplayFullResults(List<Lexem> lexems, bool syntaxValid, Parser parser)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"РЕЗУЛЬТАТЫ АНАЛИЗА - {DateTime.Now:HH:mm:ss}");
-            sb.AppendLine("==========================================================");
-            sb.AppendLine();
-            sb.AppendLine($"{"СТР",-4} {"КОД",-6} {"ТИП ЛЕКСЕМЫ",-20} {"ЛЕКСЕМА",-25} {"ПОЗИЦИЯ"}");
-            sb.AppendLine(new string('-', 80));
+            if (dgvResults == null) return;
+
+            dgvResults.Rows.Clear();
+            dgvResults.Columns.Clear();
+
+            // Сначала отображаем лексемы
+            dgvResults.Columns.Add("Line", "СТР");
+            dgvResults.Columns.Add("Code", "КОД");
+            dgvResults.Columns.Add("Type", "ТИП ЛЕКСЕМЫ");
+            dgvResults.Columns.Add("Lexem", "ЛЕКСЕМА");
+            dgvResults.Columns.Add("Position", "ПОЗИЦИЯ");
+
+            // Настройка ширины колонок
+            dgvResults.Columns["Line"].Width = 50;
+            dgvResults.Columns["Code"].Width = 60;
+            dgvResults.Columns["Type"].Width = 180;
+            dgvResults.Columns["Lexem"].Width = 200;
+            dgvResults.Columns["Position"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
             int currentLine = 0;
+
             foreach (var lexem in lexems)
             {
-                if (lexem.lexemLine != currentLine)
+                if (lexem.lexemLine != currentLine && currentLine > 0)
                 {
-                    if (currentLine > 0)
-                        sb.AppendLine(new string('-', 40));
-                    currentLine = lexem.lexemLine;
+                    // Разделитель между строками
+                    dgvResults.Rows.Add("", "", "", "", "---");
+                    dgvResults.Rows[dgvResults.Rows.Count - 1].DefaultCellStyle.BackColor = Color.LightGray;
                 }
-
-                string typeCode = lexem.lexemCode.ToString().PadRight(6);
-                string typeDesc = (lexem.lexemName?.Length > 18) ? lexem.lexemName.Substring(0, 15) + "..." : (lexem.lexemName ?? "Unknown");
-                typeDesc = typeDesc.PadRight(20);
-
-                string value = (lexem.lexemContaintment?.Length > 23) ? lexem.lexemContaintment.Substring(0, 20) + "..." : (lexem.lexemContaintment ?? "");
-                value = value.PadRight(25);
+                currentLine = lexem.lexemLine;
 
                 string location = $"({lexem.lexemStartPosition}-{lexem.lexemEndPosition})";
 
-                string lineNum = lexem.lexemLine.ToString().PadRight(4);
-
                 if (lexem.lexemType == Lexem.LexemType.Error)
                 {
-                    sb.AppendLine($"{lineNum} ОШИБКА: {lexem.lexemContaintment} в {location}");
+                    dgvResults.Rows.Add(lexem.lexemLine, lexem.lexemCode, "ОШИБКА", lexem.lexemContaintment, location);
+                    dgvResults.Rows[dgvResults.Rows.Count - 1].DefaultCellStyle.BackColor = Color.LightCoral;
                 }
                 else
                 {
-                    sb.AppendLine($"{lineNum} {typeCode} {typeDesc} {value} {location}");
+                    dgvResults.Rows.Add(lexem.lexemLine, lexem.lexemCode, lexem.lexemName, lexem.lexemContaintment, location);
                 }
             }
 
-            sb.AppendLine(new string('=', 80));
-            sb.AppendLine("СИНТАКСИЧЕСКИЙ АНАЛИЗ:");
-            sb.AppendLine($"  Результат: {(syntaxValid ? "УСПЕШНО" : "ОШИБКА")}");
-
-            if (!syntaxValid && parser != null)
-            {
-                sb.AppendLine();
-                parser.PrintLog(sb);
-            }
-
-            sb.AppendLine(new string('=', 80));
+            // Разделитель перед результатами синтаксического анализа
+            dgvResults.Rows.Add("", "", "", "", "");
+            dgvResults.Rows[dgvResults.Rows.Count - 1].DefaultCellStyle.BackColor = Color.LightGray;
+            dgvResults.Rows.Add("", "", "СИНТАКСИЧЕСКИЙ АНАЛИЗ:", syntaxValid ? "УСПЕШНО" : "ОШИБКА", "");
 
             int totalLines = lexems.Max(l => l.lexemLine);
             int totalTokens = lexems.Count(l => l.lexemType != Lexem.LexemType.Error);
             int totalErrors = lexems.Count(l => l.lexemType == Lexem.LexemType.Error);
 
-            sb.AppendLine($"ИТОГО:");
-            sb.AppendLine($"  📄 Строк: {totalLines}");
-            sb.AppendLine($"  ✓ Лексем: {totalTokens}");
-            sb.AppendLine($"  ✗ Ошибок: {totalErrors}");
-            sb.AppendLine($"  ∑ Всего элементов: {lexems.Count}");
+            dgvResults.Rows.Add("", "", "", "", "");
+            dgvResults.Rows[dgvResults.Rows.Count - 1].DefaultCellStyle.BackColor = Color.LightGray;
+            dgvResults.Rows.Add("", "", $"📄 Строк: {totalLines}", "", "");
+            dgvResults.Rows.Add("", "", $"✓ Лексем: {totalTokens}", "", "");
+            dgvResults.Rows.Add("", "", $"✗ Ошибок: {totalErrors}", "", "");
+            dgvResults.Rows.Add("", "", $"∑ Всего элементов: {lexems.Count}", "", "");
+        }
 
-            textBoxResults.Text = sb.ToString();
+        private void NavigateToErrorPositionFromGrid(int line, int position)
+        {
+            int textPosition = GetPositionFromLineAndColumn(line, position);
+            if (textPosition >= 0)
+            {
+                textBoxEditor.Focus();
+                textBoxEditor.Select(textPosition, 1);
+                textBoxEditor.ScrollToCaret();
+
+                textBoxEditor.SelectionBackColor = Color.Yellow;
+
+                Timer timer = new Timer();
+                timer.Interval = 2000;
+                timer.Tick += (s, e) =>
+                {
+                    textBoxEditor.SelectionBackColor = Color.White;
+                    timer.Stop();
+                    timer.Dispose();
+                };
+                timer.Start();
+            }
+        }
+
+        private int GetLineFromRow(DataGridViewRow row)
+        {
+            if (row.Cells["Line"].Value != null && int.TryParse(row.Cells["Line"].Value.ToString(), out int line))
+                return line;
+            return 1;
+        }
+
+        private void CopyAllResultsToClipboard()
+        {
+            if (dgvResults == null || dgvResults.Rows.Count == 0) return;
+
+            StringBuilder sb = new StringBuilder();
+
+            // Заголовки колонок
+            for (int i = 0; i < dgvResults.Columns.Count; i++)
+            {
+                sb.Append(dgvResults.Columns[i].HeaderText);
+                if (i < dgvResults.Columns.Count - 1) sb.Append("\t");
+            }
+            sb.AppendLine();
+
+            // Данные
+            foreach (DataGridViewRow row in dgvResults.Rows)
+            {
+                for (int i = 0; i < dgvResults.Columns.Count; i++)
+                {
+                    string value = row.Cells[i].Value?.ToString() ?? "";
+                    sb.Append(value);
+                    if (i < dgvResults.Columns.Count - 1) sb.Append("\t");
+                }
+                sb.AppendLine();
+            }
+
+            Clipboard.SetText(sb.ToString());
+            MessageBox.Show("Результаты скопированы в буфер обмена",
+                "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void ClearResults()
+        {
+            if (dgvResults != null)
+            {
+                dgvResults.Rows.Clear();
+                dgvResults.Columns.Clear();
+                // Добавляем колонку по умолчанию, чтобы избежать ошибок
+                dgvResults.Columns.Add("Message", "СООБЩЕНИЕ");
+                dgvResults.Rows.Add("Готов к анализу.");
+            }
+            _lastSyntaxErrors = null;
+            _lastLexems = null;
         }
 
         private void HighlightErrorsFromLexems(List<Lexem> lexems)
@@ -442,7 +730,7 @@ namespace WindowsFormsApp2
                 return position + column - 1;
             }
 
-            return -1; // Строка не найдена
+            return -1;
         }
 
         private void InitializeRunButton()
@@ -538,14 +826,20 @@ namespace WindowsFormsApp2
             textBoxEditor.Multiline = true;
             textBoxEditor.ScrollBars = RichTextBoxScrollBars.Both;
 
-            textBoxResults.Dock = DockStyle.Fill;
-            textBoxResults.Multiline = true;
-            textBoxResults.ScrollBars = RichTextBoxScrollBars.Both;
-            textBoxResults.ReadOnly = true;
-            textBoxResults.BackColor = Color.FromArgb(240, 240, 240);
+            // Настройка DataGridView
+            if (dgvResults != null)
+            {
+                dgvResults.Dock = DockStyle.Fill;
+                dgvResults.BackgroundColor = Color.FromArgb(240, 240, 240);
+                dgvResults.BorderStyle = BorderStyle.None;
+                dgvResults.Font = new Font("Consolas", 10);
+            }
+
+            // Очищаем Panel2 и добавляем DataGridView
+            splitContainer1.Panel2.Controls.Clear();
+            splitContainer1.Panel2.Controls.Add(dgvResults);
 
             splitContainer1.Panel1.Controls.Add(textBoxEditor);
-            splitContainer1.Panel2.Controls.Add(textBoxResults);
 
             splitContainer1.Panel1MinSize = 200;
             splitContainer1.Panel2MinSize = 200;
@@ -971,6 +1265,32 @@ namespace WindowsFormsApp2
         private void infoButton_Click(object sender, EventArgs e)
         {
             оПрограммеToolStripMenuItem_Click(sender, e);
+        }
+
+        private void DgvResults_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.RowIndex >= dgvResults.Rows.Count - 1) return;
+
+            DataGridViewRow row = dgvResults.Rows[e.RowIndex];
+
+            // Проверяем, есть ли в строке информация об ошибке
+            if (row.Cells["Description"] != null && !string.IsNullOrEmpty(row.Cells["Description"].Value?.ToString()))
+            {
+                if (int.TryParse(row.Cells["Line"].Value?.ToString(), out int line) &&
+                    int.TryParse(row.Cells["Position"].Value?.ToString(), out int position))
+                {
+                    NavigateToErrorPositionFromGrid(line, position);
+                }
+            }
+            else if (row.Cells["Position"] != null && !string.IsNullOrEmpty(row.Cells["Position"].Value?.ToString()))
+            {
+                string posStr = row.Cells["Position"].Value.ToString();
+                int dashIndex = posStr.IndexOf('-');
+                if (dashIndex > 0 && int.TryParse(posStr.Substring(1, dashIndex - 1), out int startPos))
+                {
+                    NavigateToErrorPositionFromGrid(GetLineFromRow(row), startPos);
+                }
+            }
         }
     }
 }
