@@ -75,7 +75,7 @@ markdown
 
 ### Формальное определение грамматики G = (VN, VT, P, S)
 
-**Нетерминальные символы** = { `<program>`, `<statement>`, `<identifier>`, `<fstring>`, `<format_spec>`, `<format_call>`, `<argument>`, `<number>`, `<digit>` }
+**Нетерминальные символы** = { &lt;program&gt;, &lt;statement&gt;, &lt;identifier&gt;, &lt;fstring&gt;, &lt;format_spec&gt;, &lt;format_call&gt;, &lt;argument&gt;, &lt;number&gt;, &lt;digit&gt; }
 
 **Терминальные символы VT** = { IDENT, "=", "\"", "{", ":", "f", "}", ".", "format", "(", ")", ";", "+", "-", "e", DIGIT, LETTER }
 
