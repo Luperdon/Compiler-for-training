@@ -80,8 +80,8 @@ IDENT, "=", "\"", "{", ":", "f", "}", ".", "format", "(", ")", ";",
 "+", "-", "e", DIGIT, LETTER
 
 **Нетерминальные символы (VN):**
-<program>, <statement>, <identifier>, <fstring>, <format_spec>, 
-<format_call>, <argument>, <number>, <digit>
+
+<program>, <statement>, <identifier>, <fstring>, <format_spec>, <format_call>, <argument>, <number>, <digit>
 
 **Правила вывода (P):**
 
