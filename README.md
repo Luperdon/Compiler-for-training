@@ -85,7 +85,7 @@ markdown
 3.  <identifier> ::= IDENT
 4.  <fstring> ::= "\"" <format_spec> "\""
 5.  <format_spec> ::= "{" ":" "f" "}"
-6.  <format_call> ::= "." "format" ("(" <argument> ")")
+6.  <format_call> ::= "." "format" ("(" argument ")")
 7.  <argument> ::= <number>
 8.  <number> ::= [ "+" | "-" ] <digit> { <digit> } [ "." <digit> { <digit> } ] [ "e" [ "+" | "-" ] <digit> { <digit> } ]
 9.  <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
