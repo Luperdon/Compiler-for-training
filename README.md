@@ -75,31 +75,23 @@ markdown
 
 ### Формальное определение грамматики G = (VN, VT, P, S)
 
-**Терминальные символы (VT):**
-IDENT, "=", "\"", "{", ":", "f", "}", ".", "format", "(", ")", ";", 
-"+", "-", "e", DIGIT, LETTER
+**Нетерминальные символы** = { <program>, <statement>, <identifier>, <fstring>, <format_spec>, <format_call>, <argument>, <number>, <digit> }
 
-**Нетерминальные символы (VN):**
+**Терминальные символы VT** = { IDENT, "=", "\"", "{", ":", "f", "}", ".", "format", "(", ")", ";", "+", "-", "e", DIGIT, LETTER }
 
-<program>, <statement>, <identifier>, <fstring>, <format_spec>, <format_call>, <argument>, <number>, <digit>
+**Правила вывода(P):**
+1.  <program> ::= <statement> | <program> <statement>
+2.  <statement> ::= <identifier> "=" <fstring> <format_call> ";"
+3.  <identifier> ::= IDENT
+4.  <fstring> ::= "\"" <format_spec> "\""
+5.  <format_spec> ::= "{" ":" "f" "}"
+6.  <format_call> ::= "." "format" "(" <argument> ")"
+7.  <argument> ::= <number>
+8.  <number> ::= [ "+" | "-" ] <digit> { <digit> } [ "." <digit> { <digit> } ] [ "e" [ "+" | "-" ] <digit> { <digit> } ]
+9.  <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
-**Правила вывода (P):**
-
-1. <program> ::= <statement> | <program> <statement>
-
-2. <statement> ::= <identifier> "=" <fstring> <format_call> ";"
-
-3. <fstring> ::= "\"" <format_spec> "\""
-
-4. <format_spec> ::= "{" ":" "f" "}"
-
-5. <format_call> ::= "." "format" "(" <argument> ")"
-
-6. <argument> ::= <number>
-
-7. <number> ::= ["+" | "-"] <digit>+ ["." <digit>+] ["e" ["+" | "-"] <digit>+]
-
-8. <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+где { } — повторение 0 или более раз
+    [ ] — необязательный элемент
 
 
 ### Пример вывода для корректной строки:
@@ -109,7 +101,6 @@ IDENT = " { : f } " . format ( <number> ) ; ⇒
 IDENT = " { : f } " . format ( 3.234e+4 ) ;
 
 ### Схема рекурсивного спуска
-
 
 
 ## Классификация грамматики (по Хомскому)
