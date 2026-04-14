@@ -75,33 +75,48 @@ markdown
 
 ### Формальное определение грамматики G = (VN, VT, P, S)
 
-**Нетерминальные символы** = { &lt;program&gt;, &lt;statement&gt;, &lt;identifier&gt;, &lt;fstring&gt;, &lt;format_spec&gt;, &lt;format_call&gt;, &lt;argument&gt;, &lt;number&gt;, &lt;digit&gt; }
+## Грамматика
 
-**Терминальные символы VT** = { IDENT, "=", "\"", "{", ":", "f", "}", ".", "format", "(", ")", ";", "+", "-", "e", DIGIT, LETTER }
+```1.<START> -> IdentifyLetters <IDREM>
+2.<IDREM> -> Symbols <IDREM>
+3.<IDREM> -> '=' <FSTRING>
+4.<FSTRING> -> '"' <BEGIN_FSTRING>
+5.<BEGIN_FSTRING> -> '{' <OPEN_SCOBE>
+6.<OPEN_SCOBE> -> ':' <COLON>
+7.<COLON> -> 'f' <FSYMBOL>
+8.<FSYMBOL> -> '}' <CLOSE_SCOBE>
+9.<CLOSE_SCOBE> -> '"' <END_FSTRING>
+10.<END_FSTRING> -> '.' <FORMAT>
+11.<FORMAT> -> 'format'<OPEN_ARG>
+12.<OPEN_ARG> -> '(' <SCIENTIFIC>
+13.<SCIENTIFIC> -> '+'<INT>
+14.<SCIENTIFIC> -> '-'<INT>
+15.<SCIENTIFIC> -> digit <INTREM>
+16.<INT> -> digit <INTREM>
+17.<INTREM> -> digit<INTREM>
+18.<INTREM> -> 'e' <EXP>
+19.<INTREM> -> '.'<DECIMAL>
+20.<DECIMAL> -> digit <DECIMALREM>
+21.<DECIMALREM> -> digit <DECIMALREM>
+22.<DECIMALREM> -> 'e' <EXP>
+23.<EXP> -> '+'<EXP_NUM>
+24.<EXP> -> '-'<EXP_NUM>
+25.<EXP_NUM> -> digit <EXP_NUM_REM>
+26.<EXP_NUM_REM> -> digit <EXP_NUM_REM>
+27.<EXP_NUM_REM> -> ')'<END>
+28.<END> -> ';'
 
-**Правила вывода(P):**
-1.  <program> ::= <statement> | <program> <statement>
-2.  <statement> ::= <identifier> "=" <fstring> <format_call> ";"
-3.  <identifier> ::= IDENT
-4.  <fstring> ::= "\"" <format_spec> "\""
-5.  <format_spec> ::= "{" ":" "f" "}"
-6.  <format_call> ::= "." "format" "(" `<argument>` ")"
-7.  <argument> ::= <number>
-8.  <number> ::= [ "+" | "-" ] <digit> { <digit> } [ "." <digit> { <digit> } ] [ "e" [ "+" | "-" ] <digit> { <digit> } ]
-9.  <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+IdentifyLetters ->'a'|'b'|'c'|...|'z'|'A'|'B'|'C'|...|'Z'|'_'
+Symbols -> 'a'|'b'|'c'|...|'z'|'A'|'B'|'C'|...|'Z'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'0'|'_'
+digit -> '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'0'
 
-где { } — повторение 0 или более раз
-    [ ] — необязательный элемент
-
-
-### Пример вывода для корректной строки:
-<program> ⇒ <statement> ⇒ <identifier> = <fstring> <format_call> ; ⇒
-IDENT = " <format_spec> " . format ( <argument> ) ; ⇒
-IDENT = " { : f } " . format ( <number> ) ; ⇒
-IDENT = " { : f } " . format ( 3.234e+4 ) ;
-
+Z = <START>
+VT = {a,b,c,...,z,A,B,C,...,Z,_,=,+,-,;,0,1,2,...,9};
+VN = {<START>,<IDREM>,<FSTRING>,<BEGIN_FSTRING>,<OPEN_SCOBE>,<COLON>,<FSYMBOL>,<CLOSE_SCOBE>,<END_FSTRING>,<FORMAT>,<OPEN_ARG>,<SCIENTIFIC>,<INT>,<INTREM>,<DECIMAL>,<DECIMALREM>,<EXP>,<EXP_NUM>,<EXP_NUM_REM>};
+```
 ### Схема рекурсивного спуска
 
+![Схема рекурсивного спуска](screenshots/РекурсивныйСпуск.drawio.png)
 
 ## Классификация грамматики (по Хомскому)
 
