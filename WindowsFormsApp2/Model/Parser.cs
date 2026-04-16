@@ -91,6 +91,7 @@ namespace WindowsFormsApp2.Model
                     stateLog.Add($"--- Новая строка {currentLine} ---");
                 }
 
+                // Проверяем ожидаемую лексему
                 if (IsExpectedLexem(currentState, currentLexem))
                 {
                     ProcessLexem(currentLexem);
@@ -98,26 +99,43 @@ namespace WindowsFormsApp2.Model
                 }
                 else
                 {
-                    string description = GetErrorDescription(currentState, currentLexem);
+                    // Записываем ошибку с понятным описанием
+                    string description = GetSmartErrorDescription(currentState, currentLexem);
                     AddError(currentLexem, description, currentLexem.lexemLine, currentLexem.lexemStartPosition);
-                    stateLog.Add($"ОШИБКА: {description} (Лексема: '{currentLexem.lexemContaintment}')");
+                    stateLog.Add($"ОШИБКА: {description}");
 
                     errorFoundInCurrentStatement = true;
                     lastErrorPositionInLine = currentLexem.lexemStartPosition;
 
+                    // Переходим к следующей лексеме
                     position++;
-                    ResetToStart();
 
-                    if (position < lexems.Count && lexems[position].lexemCode == 18)
+                    // ВАЖНО: Не сбрасываем состояние полностью, а пытаемся восстановиться
+                    // в зависимости от текущего состояния
+                    if (currentState == ParserState.IdRem)
                     {
-                        stateLog.Add($"Обработка ';' после ошибки, оператор завершён");
-                        currentState = ParserState.End;
-                        position++;
-                        errorFoundInCurrentStatement = false;
+                        // После ошибки в IdRem (ожидали =, получили что-то другое)
+                        // Переходим в состояние Start, чтобы найти следующий оператор
+                        currentState = ParserState.Start;
+                        ResetFormatSpecifier();
+                    }
+                    else if (currentState == ParserState.AfterEqual)
+                    {
+                        // После ошибки в AfterEqual (ожидали кавычку)
+                        // Переходим в состояние Start
+                        currentState = ParserState.Start;
+                        ResetFormatSpecifier();
+                    }
+                    else
+                    {
+                        // Для остальных состояний - сбрасываем в Start
+                        currentState = ParserState.Start;
+                        ResetFormatSpecifier();
                     }
                 }
             }
 
+            // Проверка на отсутствие ';' в конце
             if (currentState != ParserState.End && currentState != ParserState.Start)
             {
                 if (!errorFoundInCurrentStatement)
@@ -342,11 +360,137 @@ namespace WindowsFormsApp2.Model
             }
         }
 
+        private string GetSmartErrorDescription(ParserState state, Lexem lexem)
+        {
+            // Обработка лексем ошибок
+            if (lexem.lexemCode == 19)
+            {
+                if (lexem.lexemContaintment == "{:f}" || lexem.lexemContaintment == "{:g}" ||
+                    lexem.lexemContaintment == "{-f}" || lexem.lexemContaintment.Contains(":"))
+                {
+                    if (state == ParserState.IdRem)
+                        return $"Отсутствует '=' перед форматным спецификатором '{lexem.lexemContaintment}'";
+                    if (state == ParserState.AfterEqual)
+                        return $"Отсутствует открывающая кавычка перед форматным спецификатором '{lexem.lexemContaintment}'";
+                    return $"Неверный форматный спецификатор '{lexem.lexemContaintment}'. Ожидался '{{:f}}'";
+                }
+                return $"Недопустимый символ '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния Start
+            if (state == ParserState.Start)
+            {
+                switch (lexem.lexemCode)
+                {
+                    case 5: return "Отсутствует идентификатор перед строкой";
+                    case 9: return "Отсутствует идентификатор перед точкой";
+                    case 2: return "Отсутствует точка перед 'format'";
+                    case 16: return "Отсутствует 'format' перед '('";
+                    case 12:
+                    case 13:
+                    case 14:
+                    case 15: return "Отсутствует '(' перед числом";
+                    case 17: return "Отсутствует число перед ')'";
+                    case 18: return "Отсутствует выражение перед ';'";
+                    default: return $"Ожидался идентификатор, получен '{lexem.lexemContaintment}'";
+                }
+            }
+
+            // Для состояния IdRem
+            if (state == ParserState.IdRem)
+            {
+                return $"Ожидался '=', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния AfterEqual
+            if (state == ParserState.AfterEqual)
+            {
+                if (lexem.lexemCode == 21)
+                    return "Отсутствует открывающая кавычка перед форматным спецификатором";
+                return $"Ожидалась открывающая кавычка '\"', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния OpenQuote
+            if (state == ParserState.OpenQuote)
+            {
+                if (lexem.lexemCode == 5)
+                    return "Отсутствует форматный спецификатор между кавычками";
+                return $"Ожидалась открывающая фигурная скобка '{{', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния CloseQuote
+            if (state == ParserState.CloseQuote)
+            {
+                if (lexem.lexemCode == 2)
+                    return "Отсутствует точка перед 'format'";
+                if (lexem.lexemCode == 9)
+                    return "Ожидалась точка, но после кавычки должен быть метод format";
+                return $"Ожидалась закрывающая кавычка '\"', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния AfterDot
+            if (state == ParserState.AfterDot)
+            {
+                if (lexem.lexemCode != 2)
+                    return $"Ожидалось ключевое слово 'format', получено '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния Format
+            if (state == ParserState.Format)
+            {
+                if (lexem.lexemCode != 16)
+                    return $"Ожидалась открывающая скобка '(', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния OpenArg
+            if (state == ParserState.OpenArg)
+            {
+                if (lexem.lexemCode == 12 || lexem.lexemCode == 13 ||
+                    lexem.lexemCode == 14 || lexem.lexemCode == 15)
+                    return null; // нет ошибки
+                return $"Ожидалось число, получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния AfterNumber
+            if (state == ParserState.AfterNumber)
+            {
+                if (lexem.lexemCode != 17)
+                    return $"Ожидалась закрывающая скобка ')', получен '{lexem.lexemContaintment}'";
+            }
+
+            // Для состояния CloseArg
+            if (state == ParserState.CloseArg)
+            {
+                if (lexem.lexemCode != 18)
+                    return $"Ожидалась точка с запятой ';', получен '{lexem.lexemContaintment}'";
+            }
+
+            return GetErrorDescription(state, lexem);
+        }
         private string GetErrorDescription(ParserState state, Lexem lexem)
         {
             if (lexem.lexemCode == 19)
             {
                 return $"Недопустимый символ '{lexem.lexemContaintment}'";
+            }
+
+            // Специальная диагностика для состояния Start
+            if (state == ParserState.Start)
+            {
+                switch (lexem.lexemCode)
+                {
+                    case 5: return "Отсутствует идентификатор перед строкой";
+                    case 9: return "Отсутствует идентификатор перед точкой";
+                    case 2: return "Отсутствует точка перед 'format'";
+                    case 16: return "Отсутствует 'format' перед '('";
+                    case 12:
+                    case 13:
+                    case 14:
+                    case 15: return "Отсутствует '(' перед числом";
+                    case 17: return "Отсутствует число перед ')'";
+                    case 18: return "Отсутствует выражение перед ';'";
+                    default: return $"Ожидался идентификатор, получен '{lexem.lexemContaintment}'";
+                }
             }
 
             if (state == ParserState.CloseQuote && lexem.lexemCode != 5)
@@ -362,8 +506,6 @@ namespace WindowsFormsApp2.Model
 
             switch (state)
             {
-                case ParserState.Start:
-                    return $"Ожидался идентификатор, получен '{lexem.lexemContaintment}'";
                 case ParserState.IdRem:
                     return $"Ожидался '=', получен '{lexem.lexemContaintment}'";
                 case ParserState.AfterEqual:

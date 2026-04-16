@@ -50,6 +50,11 @@
     <Compile Include="Model\Lexem.cs" />
     <Compile Include="Model\Lexer.cs" />
     <Compile Include="Model\Parser.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="View\Forms\CompilerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,6 +63,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\Forms\CompilerForm.resx">
       <DependentUpon>CompilerForm.cs</DependentUpon>
     </EmbeddedResource>
