@@ -114,9 +114,9 @@ Z = <START>
 VT = {a,b,c,...,z,A,B,C,...,Z,_,=,+,-,;,0,1,2,...,9};
 VN = {<START>,<IDREM>,<FSTRING>,<BEGIN_FSTRING>,<OPEN_SCOBE>,<COLON>,<FSYMBOL>,<CLOSE_SCOBE>,<END_FSTRING>,<FORMAT>,<OPEN_ARG>,<SCIENTIFIC>,<INT>,<INTREM>,<DECIMAL>,<DECIMALREM>,<EXP>,<EXP_NUM>,<EXP_NUM_REM>};
 ```
-### Схема рекурсивного спуска
+### Схема конечного автомата
 
-![Схема рекурсивного спуска](screenshots/ГрафАвтоматаЛР3финал.png)
+![Схема конечного автомата](screenshots/ГрафАвтоматаЛР3финал.png)
 
 ## Классификация грамматики (по Хомскому)
 
