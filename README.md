@@ -116,7 +116,7 @@ digit -> '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'0'
 
 - **Q** = {Start, IdRem, AfterEqual, OpenQuote, OpenBrace, Colon, LetterF, CloseBrace, CloseQuote, AfterDot, Format, OpenArg, InNumber, AfterNumber, CloseArg, End, Error}
 - **Σ** = {id, `=`, `"`, `{`, `:`, `f`, `}`, `.`, `format`, `(`, число, `)`, `;`, error}
-- **δ** — функция переходов (определена таблицей выше)
+- **δ** — функция переходов
 - **q₀** = Start
 - **F** = {End}
 ```
